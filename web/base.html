@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASC Rank</title>
+    <style>
+        body {
+            background-color: #333; /* Very dark gray */
+        }
+
+        .page-container {
+            display: flex;
+            justify-content: center;
+            background-color: #333; /* Very dark gray */
+            margin-bottom: 20px; /* Add margin bottom for space */
+        }
+
+        .title-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px; /* Add some padding for spacing */
+            width: 100%; /* Ensure the container takes full width */
+        }
+
+        .title-container h1 {
+            color: white;
+            margin: 0;
+            flex-grow: 1; /* Let the h1 element grow to fill the available space */
+            text-align: center; /* Center-align the text */
+        }
+
+        .title-container img {
+            height: 200px;
+        }
+
+        .table-container {
+            margin: 0 auto;
+            /* This centers the div horizontally */
+            width: 60%;
+            /* Adjust the width as needed */
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            padding: 4px; /* Decrease padding to reduce space */
+            text-align: center; /* Center-align the content */
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #e5e5e5;
+        }
+
+        tr:nth-child(even) {
+            background-color: #e5e5e5; /* Light gray */
+        }
+
+        tr:nth-child(odd) {
+            background-color: #fff; /* White */
+        }
+
+        tr:hover {
+            background-color: #bcbcbc; /* Darker gray on hover */
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="page-container">
+    <div class="title-container">
+        <h1>Arena Santa Clara Ranking</h1>
+    </div>
+    </div>
+    <div class="table-container">
+        dataframe_here
+    </div>
+</body>
+
+</html>
