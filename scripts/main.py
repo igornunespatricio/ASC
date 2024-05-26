@@ -1,5 +1,6 @@
 from collect import collect
 import dashboard.app
+import dashboard.static_web_page
 from transform.Ranking import Ranking
 import utils
 import os
@@ -10,6 +11,7 @@ def main():
     
     DATABASE_PATH = 'data/asc.db'
     MATCH_RESULTS_TABLE_NAME = 'MatchResults'
+    WEB_PAGE_PATH = 'web/index.html'
     
     # getting match results and storing in the database
     match_results = collect.get_data_url()
@@ -64,13 +66,22 @@ def main():
         'RankStatistics'
     )
     
-    app = dashboard.app.DashApp(
+    # app = dashboard.app.DashApp(
+    #     ranking_statistics_df=ranking_statistics,
+    #     historic_match_results=history_points_per_match,
+    #     title='Ranking ASC'
+    # )
+    
+    # app.run()
+    
+    static_page = dashboard.static_web_page.StaticWebPage(
         ranking_statistics_df=ranking_statistics,
         historic_match_results=history_points_per_match,
         title='Ranking ASC'
     )
-    
-    app.run()
+
+    # Generate and save HTML
+    static_page.save_html(WEB_PAGE_PATH)
     
     
 if __name__ == '__main__':
