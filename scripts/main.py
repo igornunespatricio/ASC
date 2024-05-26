@@ -1,5 +1,4 @@
 from collect import collect
-import dashboard.app
 import dashboard.static_web_page
 from transform.Ranking import Ranking
 import utils
