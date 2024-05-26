@@ -1,4 +1,4 @@
-name: Run Dash App
+name: Run Static Website
 
 on:
   push:
@@ -25,9 +25,3 @@ jobs:
 
       - name: Run Python script to generate HTML
         run: python scripts/main.py
-
-      - name: Upload HTML file
-        uses: actions/upload-artifact@v2
-        with:
-          name: web-page
-          path: web/index.html
