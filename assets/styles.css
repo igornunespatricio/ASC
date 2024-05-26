@@ -1,0 +1,17 @@
+/* Default styles */
+body {
+    font-family: Arial, sans-serif;
+}
+
+/* Styles for screens smaller than 600px (smartphones) */
+@media only screen and (max-width: 600px) {
+    h1 {
+        font-size: 2em; /* Decrease font size for smaller screens */
+    }
+    h2 {
+        font-size: 1.5em; /* Decrease font size for smaller screens */
+    }
+    div {
+        width: 95%; /* Adjust width for smaller screens */
+    }
+}
