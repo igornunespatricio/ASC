@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from utils import *
+import sqlite3
 
 class Ranking:
     def __init__(
@@ -50,17 +50,15 @@ class Ranking:
                 'Points': np.repeat(initial_points, len(self.players_names))
             }
         ).set_index('Player')
-        
         return initial_points_per_player
     
     def __join_current_points_in_temporary_results(self):
         results_players_columns = ['Vitorioso 1', 'Vitorioso 2', 'Derrotado 1', 'Derrotado 2']
         for column in results_players_columns:
-            self.__temporary_results = self.__temporary_results.\
-                set_index(column).\
-                    join(self.__temporary_points, how='left').\
-                        reset_index(names=column).\
-                            rename({'Points':f'Current Points {column}'}, axis=1)        
+            self.__temporary_results = self.__temporary_results.set_index(column)
+            self.__temporary_results = self.__temporary_results.join(self.__temporary_points, how='left')
+            self.__temporary_results = self.__temporary_results.reset_index(names=column)
+            self.__temporary_results = self.__temporary_results.rename({'Points':f'Current Points {column}'}, axis=1)        
     
     def __join_points_balance_in_temporary_results(self):
         
@@ -82,12 +80,14 @@ class Ranking:
             self.__temporary_results = self.__temporary_results.join(points_player)
     
     def __concatenate_temporary_results_in_points_per_match(self):
-        self.__points_per_match = self.__points_per_match = pd.concat(
+        
+        
+        self.__points_per_match = pd.concat(
             [
                 self.__points_per_match,
                 self.__temporary_results
             ],
-            axis=1
+            axis=0
         )
     
     def __aggregate_temporary_points_per_person_in_temporary_points(self):
@@ -97,8 +97,9 @@ class Ranking:
             grouped_points_per_player.append(grouped_points_player)
         grouped_points = pd.concat(grouped_points_per_player).groupby(level=0).sum().sum(axis=1)
         grouped_points.name = 'balance'
-        self.__temporary_points = self.__temporary_points.join(grouped_points)
+        self.__temporary_points = pd.concat([self.__temporary_points, grouped_points], axis=1)
         self.__temporary_points = self.__temporary_points.sum(axis=1)
+        self.__temporary_points.name = 'Points'
         
     def __adjust_temp_points(self):
         median_points = self.__temporary_points.loc[self.__temporary_points.index != 'Convidado',].median()
@@ -108,7 +109,7 @@ class Ranking:
     def compute_ranking(self, date_column_name:str='Data'):
         days_played = self.results[date_column_name].sort_values(ascending=True).unique()
         for day in days_played:
-            print(day)
+            # print(day)
             
             self.__temporary_results = self.results[self.results[date_column_name] == day]
             
@@ -122,19 +123,68 @@ class Ranking:
             
             self.__adjust_temp_points()
             
-            print(self.__temporary_points)
-            
-            # TODO: check if loop is working for all days
-            # TODO: check if self.__points_per_match and self.__temporary_results stores all points per match (current points and balance points both)
-            # TODO: check if in the end of the loop self.__temporary_points contains the final aggregation of points until the last day
-            # TODO: add a method to calculate basic metrics like number of matches, wins, percentage of wins, etc.
-            # TODO: add a method to return the final table with points, number of matches, percentage of wins, etc.
-            # TODO: DONT FORGET TO REMOVE THE BREAK COMMAND BELOW TO TEST ALL THESE :)
-            break
+    def get_temporary_points(self):
+        return self.__temporary_points
     
-if __name__== '__main__':
-    df = get_data_excel()
-    df = get_columns_from_dataframe(df=df)
+    def get_points_per_match(self):
+        df = self.__points_per_match.reset_index(drop=True)
+        df['Data'] = pd.to_datetime(df['Data']).dt.date
+        return df
+    
+    def compute_final_points_per_player(self):
+        df = pd.DataFrame()
+        for player_col, balance_points_col in zip(self.columns_of_players, self.match_balance_col_names):
+            df = pd.concat(
+                [
+                    df,
+                    self.__points_per_match.groupby(player_col)[balance_points_col].sum()
+                ]
+            )
+        df = df.sum(axis=1).groupby(level=0).sum() + self.initial_points
+        return df
+    
+    def compute_statistics(self):
+        
+        self.compute_ranking()
+        
+        df = pd.DataFrame()
+        
+        for player_col in self.columns_of_players:
+            df = pd.concat(
+                [
+                    df,
+                    self.results.groupby(player_col)[player_col].count()
+                ],
+                axis=1
+            )
+        df['Wins'] = df[['Vitorioso 1', 'Vitorioso 2']].sum(axis=1)
+        df['Losses'] = df[['Derrotado 1', 'Derrotado 2']].sum(axis=1)
+        df['Total Matches'] = df['Wins'] + df['Losses']
+        df['% Wins'] = df['Wins'] / df['Total Matches']
+        df['% Wins'] = df['% Wins'].map(lambda x: '{:.2%}'.format(x))
+        df = df[['Wins', 'Losses', 'Total Matches', '% Wins']]
+        final_points_per_player = self.compute_final_points_per_player()
+        final_points_per_player.name = 'Points'
+        df = df.join(final_points_per_player)
+        df = df.reset_index(names='Player')
+        df = df.sort_values(by=['Points', 'Total Matches'], ascending=[False, False])
+        df['Rank'] = range(1, df.shape[0]+1)
+        columns = ['Rank', 'Player', 'Points']
+        columns.extend([col for col in df.columns if col not in columns])
+        
+        return df[columns]
+             
+    
+    
+if __name__ == '__main__':
+    conn = sqlite3.connect('data/asc.db')
+
+    # load table from database
+    df = pd.read_sql_query("SELECT * FROM MatchResults", conn)
+    
+    # close database connection
+    conn.close()
+    
     ranking_instance = Ranking(
         columns_of_players=[
             'Vitorioso 1', 
@@ -144,4 +194,5 @@ if __name__== '__main__':
         ], 
         results=df
     )
-    ranking_instance.compute_ranking()
+    
+    ranking_instance.compute_statistics()
