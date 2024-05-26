@@ -11,7 +11,7 @@ def main():
     
     DATABASE_PATH = 'data/asc.db'
     MATCH_RESULTS_TABLE_NAME = 'MatchResults'
-    WEB_PAGE_PATH = 'web/index.html'
+    WEB_PAGE_PATH = 'docs/index.html'
     
     # getting match results and storing in the database
     match_results = collect.get_data_url()
