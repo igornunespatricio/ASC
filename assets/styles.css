@@ -3,6 +3,11 @@ body {
     font-family: Arial, sans-serif;
 }
 
+.container {
+    width: 90%; /* Adjust as needed */
+    margin: 0 auto; /* Center horizontally */
+}
+
 /* Styles for screens smaller than 600px (smartphones) */
 @media only screen and (max-width: 600px) {
     h1 {
