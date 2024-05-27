@@ -2,7 +2,7 @@ name: Update index.html
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Runs at midnight UTC every day
+    - cron: '5 23 * * *'  # Runs at 8:05 PM Brasília time (23:05 UTC) every day
   push:
     branches:
       - main  # Or your default branch
